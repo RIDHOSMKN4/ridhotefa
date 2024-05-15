@@ -1,74 +1,79 @@
 <template>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-    />
+  <div>
     <div class="container-fluid">
       <div class="row">
-        <h2 class="text-center my-4">BUKU</h2>
+        <div class="col-lg-2">
+          <nuxt-link to="../">
+            <i class="bi bi-arrow-left-short"></i>
+          </nuxt-link>
+        </div>
         <div class="col-lg-12">
-          <div class="my-3">
+          <div class="mt-1">
             <form @submit.prevent="getBooks">
-              <input
-                v-model="keyword"
-                type="search"
-                class="form-control rounded-5"
-                placeholder="mau baca apa?"
-              />
+              <input v-model="keyword" type="search" class="form-control " placeholder="Mau baca apa hari ini?" />
             </form>
           </div>
-          <div>menampilkan {{ books.length }} buku dari {{ jumlah }} </div>
-          <div class="row">
-            <div v-for="(book, i) in books" key="i" class="col-lg-2">
-              <div class="card mb-4">
-                <NuxtLink :to="`/buku/${book.id}`">
-                  <img :src="book.cover" class="cover" alt="cover" />
-                </NuxtLink>
-              </div>
+        </div>
+        <div class="my-3 text-muted">menampilkan {{ books.length }} dari {{ book }}</div>
+      </div>
+      <div class="row">
+        <div v-for="(book, i) in books" :key="i" class="col-2">
+          <div class="card mb-3">
+            <div class="card-body">
+              <nuxt-link :to="`buku/${book.id}`">
+                <img :src="book.cover" class="cover" alt="cover" />
+              </nuxt-link>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <nuxt-link to="../"
-      ><button
-        type="submit"
-        class="btn btn-lg rounded-5 px-5 bg-light"
-        style="float: right"
-      >
-        KEMBALI
-      </button></nuxt-link
-    >
-  </template>
-
-<style scoped>
-
-.card-body {
-    width: 100%;
-    height: 100%;
-    padding: 0;
-}
-
-.cover{
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: 0 30;
-}
-</style>
+  </div>
+</template>
 
 <script setup>
-const supabase = useSupabaseClient()
+  const supabase = useSupabaseClient()
+  const books = ref([])
+  const keyword = ref('')
+  const book=ref(0)
 
-const books = ref([])
+  const getBooks = async () => {
+    const { data, error } = await supabase.from('buku').select(`*`)
+      .ilike('judul', `%${keyword.value}%`)
+      if(data) books.value = data
+  }
+  const hitungData = async() => {
+    const { data, count } = await supabase.from("buku").select("*", { count : 'exact'})
+    if (data) book.value = count
+  
+  }
+  onMounted(() => {
+    hitungData()
+    getBooks()
+  })
 
-const getBooks = async() => {
-    const{data, error} = await supabase.from('buku').select(`*,kategori(*)`)
-    .ilike('judul',`%${keyword.value}%`)
-    if(data) books.value = data
+</script>
+
+<style scoped>
+.card-body {
+  width: 100%;
+  height: 19em;
+  padding: 0;
 }
 
-onMounted(() => {
-    getBooks()
-})
-</script>
+.cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 0 30;
+}
+
+i {
+  font-size: 60px;
+  color: #000000
+}
+
+input {
+  background-color: rgba(235, 235, 235, 0.699);
+}
+</style>

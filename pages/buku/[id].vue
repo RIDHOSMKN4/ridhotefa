@@ -1,57 +1,103 @@
 <template>
-    <h2 class="text-start my-4">{{ buku.judul }}</h2>
-    <div class="row">
-        <div class="col-md-3">
-            <img :src="buku.cover" class="cover" alt="cover buku">
+    <div class="container-fluid">
+        <div v-if="loading" class="d-flex justify-content-center">
+            <div class="loader">SEDANG MEMUAT.....</div>
         </div>
-        <div class="col-md-6">
-            <div class="badge bg-primary p-2">{{ buku.kategori }}</div>
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item">Penulis: {{ buku.penulis }}</li>
-                <li class="list-group-item">Penerbit: {{ buku.penerbit }}</li>
-                <li class="list-group-item">Tahun Terbit: {{ buku.tahun_terbit }}</li>
-                <li class="list-group-item">{{ buku.deskripsi }}</li>
-            </ul>
+        <div v-else>
+            <div class="col-1">
+                <nuxt-link to="../">
+                    <i class="bi bi-arrow-left-short"></i>
+                </nuxt-link>
+            </div>
+            <div class="col-10">
+                <h2 style="
+            text-align: center;
+            font-family: inter;
+            margin-top: 20px;
+          ">
+                    detail buku
+                </h2>
+            </div>
+            <table>
+                <tr>
+                    <td rowspan="7"><img :src="buku.cover" class="cover" alt="cover" /></td>
+                </tr>
+                <tr>
+                    <td >JUDUL</td>
+                    <td>:</td>
+                    <td >{{ buku.judul }}</td>
+                </tr>
+                <tr>
+                    <td >PENULIS</td>
+                    <td >:</td>
+                    <td >{{ buku.penulis }}</td>
+                </tr>
+                <tr>
+                    <td >PENERBIT</td>
+                    <td >:</td>
+                    <td >{{ buku.penerbit }}</td>
+                </tr>
+                <tr>
+                    <td >KATEGORI</td>
+                    <td >:</td>
+                    <td >{{ buku.kategori.nama }}</td>
+                </tr>
+                <tr>
+                    <td >RAK</td>
+                    <td>:</td>
+                    <td >{{ buku.rak.kode }}</td>
+                </tr>
+                <tr>
+                    <td >DESKRIPSI</td>
+                    <td >:</td>
+                    <td>{{ buku.deskripsi }}</td>
+                </tr>
+            </table>
         </div>
     </div>
-    <nuxt-link to="../"
-                ><button
-                  type="submit"
-                  class="btn btn-lg rounded-5 px-5 bg-light"
-                  style="float: right"
-                >
-                  KEMBALI
-                </button></nuxt-link>
-    </template>
+</template>
 
-<style scoped>
-  .card-body {
-    width: 100%;
-    height: 250%;
-    padding: 0;
-  }
-  .cover {
-    width: 100%;
-    height: 100%;
-
-  }
-  </style>
 
 <script setup>
-import { onMounted } from 'vue';
-
-const supabase = useSupabaseClient()
-
+const supa = useSupabaseClient()
 const route = useRoute()
-const buku = ref([])
+const buku = ref({})
+const loading = ref(true)
 
-const getBookById = async () =>  {
-    const {data, error} = await supabase.from('buku').select(`*,kategori(*)`)
-    .eq('id', route.params.id)
-    if(data)buku.value=data[0]
+const getBookById = async () => {
+    loading.value = true
+    const { data, error } = await supa.from('buku').select(`*, kategori(*), rak(*)`)
+        .eq('id', route.params.id)
+    if (data) {
+        console.log(data[0])
+        buku.value = data[0]
+        loading.value = false
+    }
 }
 
 onMounted(() => {
-getBooks()
+    getBookById()
 })
 </script>
+
+<style scoped>
+img {
+    width: 300px;
+    height: 400px;
+}
+
+button {
+    text-align: center;
+    color: black;
+    font-family: inter;
+}
+
+table {
+    font-size: 30px;
+}
+i {
+  font-size: 60px;
+  color: #000000
+}
+
+</style>
